@@ -11,7 +11,11 @@ export default {
       colors: {
         textGray: "#71767b",
         lighterGray: "#e7e9ea",
-        borderGray: "#2f3336"
+        borderGray: "#2f3336",
+        inputGray: "#202327",
+        iconBlue: "#1d9bf0",
+        iconGreen: "#00ba7c",
+        iconPinck: "#f91880"
       },
       screens: {
         xsm: "520px",
