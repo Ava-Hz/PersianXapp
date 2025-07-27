@@ -8,7 +8,10 @@ const imagekit = new ImageKit({
   urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
 });
 
-export const shareAction = async (formData: FormData) => {
+export const shareAction = async (
+  formData: FormData,
+  setting: { type: "original" | "wide" | "square"; sensitive: boolean }
+) => {
   const file = formData.get("file") as File;
   const des = formData.get("des") as string;
 
@@ -22,8 +25,11 @@ export const shareAction = async (formData: FormData) => {
       fileName: file.name,
       folder: "/Upload",
       transformation: {
-        pre: "w-600",
+        pre: `w-600, ${setting.type === "square" ? "ar-1-1" : setting.type === "wide" ? "ar-16-9" : ""}`
       },
+      customMetadata: {
+        sensitive: setting.sensitive
+      }
     },
     function (error, result) {
       if (error) console.log(error);

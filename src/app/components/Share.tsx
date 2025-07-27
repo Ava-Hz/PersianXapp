@@ -18,7 +18,6 @@ const Share = () => {
     const file = e.target.files?.[0];
     if (file) {
       setMedia(file);
-      console.log("Selected file:", file);
     }
   };
 
@@ -26,9 +25,25 @@ const Share = () => {
     fileInputRef.current?.click();
   };
 
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    if (media) {
+      formData.append("file", media);
+    }
+
+    await shareAction(formData, setting);
+
+    // Reset form
+    setMedia(null);
+    e.currentTarget.reset();
+  };
+
   const previewUrl = media ? URL.createObjectURL(media) : null;
+
   return (
-    <form action={shareAction} method="POST" className="p-4 flex gap-4">
+    <form onSubmit={handleSubmit} className="p-4 flex gap-4">
       {/* Avatar */}
       <div>
         <Image
@@ -51,9 +66,23 @@ const Share = () => {
             placeholder="چه خبر"
             className="w-full bg-transparent outline-none border-b border-borderGray py-2 text-sm"
           />
-          {previewUrl ? (
-            <div className="relative rounded-xl overflow-hidden">
-              <NextImage alt="" src={previewUrl} width={600} height={600} />
+
+          {/* Image preview */}
+          {media?.type.includes("image") && previewUrl && (
+            <div className="relative rounded-xl overflow-hidden mt-2">
+              <NextImage
+                className={`w-full ${
+                  setting.type === "original"
+                    ? "h-full object-contain"
+                    : setting.type === "squer"
+                    ? "aspect-square object-cover"
+                    : "aspect-video object-cover"
+                }`}
+                alt="preview"
+                src={previewUrl}
+                width={600}
+                height={600}
+              />
               <div
                 onClick={() => setEdit(true)}
                 className="absolute top-2 right-2 bg-black bg-opacity-50 text-white px-4 rounded-full text-sm font-bold cursor-pointer"
@@ -61,16 +90,32 @@ const Share = () => {
                 ویرایش
               </div>
             </div>
-          ) : null}
-          {edit && previewUrl ? (
+          )}
+
+          {/* Video preview */}
+          {media?.type.includes("video") && previewUrl && (
+            <div className="relative mt-2">
+              <video src={previewUrl} controls className="w-full rounded-lg" />
+              <div
+                onClick={() => setMedia(null)}
+                className="absolute top-2 right-2 bg-black bg-opacity-50 text-white w-8 h-8 flex justify-center items-center rounded-full cursor-pointer"
+              >
+                ×
+              </div>
+            </div>
+          )}
+
+          {/* Editor modal */}
+          {edit && previewUrl && (
             <ImageEditor
               onClose={() => setEdit(false)}
               previewUrl={previewUrl}
-              setting={setting}
-              setsetting={setSetting}
+              setting = {setting}
+              setSetting = {setSetting}
             />
-          ) : null}
+          )}
         </div>
+
         {/* Icons + Button */}
         <div className="flex items-center justify-between flex-wrap">
           {/* Icons */}
@@ -92,32 +137,23 @@ const Share = () => {
 
             {/* Hidden file input */}
             <input
-              name="file"
+              name="mediaFile"
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               ref={fileInputRef}
               onChange={handleFileChange}
               className="hidden"
             />
           </div>
 
-          {/* Button */}
-          <button className="bg-white text-black font-bold rounded-full py-2 px-4">
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="bg-white text-black font-bold rounded-full py-2 px-4"
+          >
             پست کردن
           </button>
         </div>
-
-        {/* Optional: Preview selected image */}
-        {media && (
-          <div>
-            <p className="text-sm text-textGray">پیش‌نمایش تصویر:</p>
-            <img
-              src={URL.createObjectURL(media)}
-              alt="Preview"
-              className="mt-2 max-w-xs rounded-md"
-            />
-          </div>
-        )}
       </div>
     </form>
   );

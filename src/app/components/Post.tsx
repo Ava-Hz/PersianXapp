@@ -2,8 +2,36 @@ import React from "react";
 import { Image } from "@imagekit/next";
 import PostInfo from "./PostInfo";
 import Interactions from "./Interactions";
+import ImageKit from "imagekit";
 
-const Post = () => {
+const imagekit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY!,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY!,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT!,
+});
+
+interface FileDetailsResponse{
+    width: number;
+    height: number;
+    filePath: string;
+    url: string;
+    fileType: string;
+    customMetaData?:{
+        sensitive: boolean
+    };
+
+}
+
+const Post = async () => {
+  const getFileDetails = (fieldId: string): Promise<FileDetailsResponse> => {
+    return new Promise((resolve, reject) => {
+      imagekit.getFileDetails("file_id", function (error, result) {
+        if (error) reject(error);
+        else resolve(result as FileDetailsResponse);
+      });
+    });
+  };
+
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
       <div className="flex items-center gap-2 text-sm text-textGray mb-2 font-bold">
